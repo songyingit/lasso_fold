@@ -1,4 +1,4 @@
-# lassofold
+# Lassofold
 
 ## License
 

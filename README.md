@@ -3,7 +3,7 @@
 ![TRAM](./Figures/TRAM.png)
 
 ## Table of Contents
-- [Abstract] (#Abstract)
+- [Abstract] (#abstract)
 - [Molecular dynamics (MD) Data](#MD_Data)
   - [Getting started with this repo](#getting-started-with-this-repo)
   - [Usage](#usage)

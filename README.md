@@ -1,4 +1,6 @@
-# Lasso Fold
+# How Lasso Peptide Fold
+
+![TRAM](./figures/TRAM.png)
 
 ## License
 

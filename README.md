@@ -43,7 +43,7 @@ Unbiased MD simulations were performed starting from the pre-folded structure an
 
 Biased MD simulations, Umbrella Sampling, were performed using the Fraction of Native Contacts (Q) as the reaction coordinate. All frames from the unbiased simulations were discretized into 50 evenly distributed bins where Q ranged from 0 (completely unfolded) to 1 (pre-folded), and each bin was an independent umbrella sampling window. For each umbrella sampling window, we applied a harmonic potential based on the root-mean-square deviation (RMSD) of heavy atoms relative to their reference structure.
 
-**Sample Code:** [`umbrella_sampling.py`]()
+**Sample Code:** [`umbrella_sampling.py`](https://github.com/songyingit/lasso_fold/tree/main/MD_data/umbrella_sampling.py)
 
 ## Markov State Model (MSM)
 
@@ -51,13 +51,13 @@ Markov State Model (MSM) was first employed to connect multiple short MD simulat
 
 1. **Featurization:** Pairwise residue-residue distances.
 
-**Sample Code:** [`msm_feature.py`]()
+**Sample Code:** [`msm_feature.py`](https://github.com/songyingit/lasso_fold/tree/main/MSM/msm_feature.py)
 
 2. **Dimensionality reduction:** Time-lagged independent component analysis (tICA) to identify slow timescale components.
 3. **Clustering:** K-means clustering to discretize into microstates.
 4. **Hyperparameter optimization:** tIC dimensions (2-10) and microstate numbers (100-700) optimized by maximizing VAMP-2 score via 10-fold cross-validation
 
-**Sample Code:** [`msm_tica_cluster_hpopt.py`]()
+**Sample Code:** [`msm_tica_cluster_hpopt.py`](https://github.com/songyingit/lasso_fold/tree/main/MSM/msm_tica_cluster_hpopt.py)
 
 ## Transition-based Reweighting Analysis Method (TRAM)
 
@@ -67,36 +67,36 @@ The implementation of TRAM consisted of the following steps:
 
 1. **Featurization:** Pairwise residue-residue distances.
 
-**Sample Code:** [`tram_feature.py`]()
+**Sample Code:** [`tram_feature.py`](https://github.com/songyingit/lasso_fold/tree/main/TRAM/tram_feature.py)
 
 2. **Bias energy calculation:** Compute bias potential energy for all frames relative to all umbrella windows
 3. **Thermodynamic state assignment (ttrajs):** Map frames to umbrella windows or unbiased ensemble. In total, there would be 'bias sampling windows' + 1 ensemble.  
 4. **Conformational state discretization (dtrajs):** Apply tICA separately to biased/unbiased data, combine features, and cluster with k-means on TICA-transformed features to obtain dtraj.
 5. **TRAM implementation:** Construct multi-ensemble Markov model (MEMM) using pyEMMA.
 
-**Sample Code:** [`tram_implement.py`]()
+**Sample Code:** [`tram_implement.py`](https://github.com/songyingit/lasso_fold/tree/main/TRAM/tram_implement.py)
 
 6. **Hyperparameter optimization:** Lag time for each system was optimized for TRAM analysis. 
 
-**Sample Code:** [`tram_lagtime_opt.py`]()
+**Sample Code:** [`tram_lagtime_opt.py`](https://github.com/songyingit/lasso_fold/tree/main/TRAM/tram_lagtime_opt.py)
 
 ## Thermodynamic Analysis
 
 **Folding free energy:** Calculated from TRAM stationary distributions. Pre-folded state: Q ≥ 0.8 and ring closure ≤ 7 Å; Unfolded state: Q ≤ 0.1 and ring closure ≥ 7 Å. Uncertainty estimated via bootstrap resampling (200 iterations).
 
-**Sample Code:** [`folding_free_energy.py`]()
+**Sample Code:** [`folding_free_energy.py`](https://github.com/songyingit/lasso_fold/tree/main/Analysis/folding_free_energy.py)
 
-**Loop Q relaxation time:** Quantifies folding stability by monitoring loop native contacts evolution from MEMM dynamics.
+**Loop Q relaxation time:** Quantifies loop stability by monitoring loop native contacts evolution from MEMM dynamics.
 
-**Sample Code:** [`loop_q_relax_time.py`]()
+**Sample Code:** [`loop_q_relax_time.py`](https://github.com/songyingit/lasso_fold/tree/main/Analysis/loop_q_relax_time.py)
 
-**Entropy cost:** Calculated using PARENT program with maximum information spanning tree (MIST) algorithm on 10,000 random frames per state.
+**Entropy cost:** Calculated using [PARENT program](https://github.com/markusfleck/PARENT) with maximum information spanning tree (MIST) algorithm on 10,000 random frames from both Pre-folded state and Unfolded state.
 
-**Sample Code:** [`entropy_cost.py`]()
+**Sample Code:** [`entropy_cost.py`](https://github.com/songyingit/lasso_fold/tree/main/Analysis/entropy_cost.py)
 
 ## Kinetic Analysis
 
-**Pathway clustering:** Leveraged Latent-Space Path Clustering (LPC) identifies metastable folding pathways:
+**Pathway clustering:** Leveraged Variational AutoEncoder (VAE) based Latent-Space Path Clustering (LPC) identifies folding pathway channels and find the most representative pathway with maximum flux:
 
 1. **Pathway identification:** TPT generates ~10,000 pathways (unfolded: Q ≤ 0.1; folded: Q ≥ 0.8)
 2. **Pathway embedding:** Project each pathway onto three 2D tIC subspaces, discretize into 50×50 bins, concatenate into 7500-dimensional vectors

@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="">Paper</a> | <a href="">Data Repository</a> | <a href="">Code Repository</a>
+  <a href="./Figures/SongYin_AICHE_2025_Lasso.pdf">Poster</a> | <a href="">Paper</a> | <a href="">Data Repository</a> | <a href="">Code Repository</a>
 </p>
 
 ## Table of Contents
@@ -18,6 +18,7 @@
 - [Transition-based Reweighting Analysis Method (TRAM)](#transition-based-reweighting-analysis-method-tram)
 - [Thermodynamic Analysis](#thermodynamic-analysis)
 - [Kinetic Analysis](#kinetic-analysis)
+- [Engineering](#engineering)
 - [License](#license)
 
 ## Abstract
@@ -49,10 +50,13 @@ Biased MD simulations, Umbrella Sampling, were performed using the Fraction of N
 Markov State Model (MSM) was first employed to connect multiple short MD simulation trajectories to capture the global information of conformational dynamics:
 
 1. **Featurization:** Pairwise residue-residue distances.
+
 **Sample Code:** [`msm_feature.py`]()
+
 2. **Dimensionality reduction:** Time-lagged independent component analysis (tICA) to identify slow timescale components.
 3. **Clustering:** K-means clustering to discretize into microstates.
 4. **Hyperparameter optimization:** tIC dimensions (2-10) and microstate numbers (100-700) optimized by maximizing VAMP-2 score via 10-fold cross-validation
+
 **Sample Code:** [`msm_tica_cluster_hpopt.py`]()
 
 ## Transition-based Reweighting Analysis Method (TRAM)
@@ -62,13 +66,18 @@ The kinetic asymmetry of folding for most of lasso peptides (unfolding proceeds 
 The implementation of TRAM consisted of the following steps:
 
 1. **Featurization:** Pairwise residue-residue distances.
+
 **Sample Code:** [`tram_feature.py`]()
+
 2. **Bias energy calculation:** Compute bias potential energy for all frames relative to all umbrella windows
 3. **Thermodynamic state assignment (ttrajs):** Map frames to umbrella windows or unbiased ensemble. In total, there would be 'bias sampling windows' + 1 ensemble.  
 4. **Conformational state discretization (dtrajs):** Apply tICA separately to biased/unbiased data, combine features, and cluster with k-means on TICA-transformed features to obtain dtraj.
 5. **TRAM implementation:** Construct multi-ensemble Markov model (MEMM) using pyEMMA.
+
 **Sample Code:** [`tram_implement.py`]()
+
 6. **Hyperparameter optimization:** Lag time for each system was optimized for TRAM analysis. 
+
 **Sample Code:** [`tram_lagtime_opt.py`]()
 
 ## Thermodynamic Analysis
@@ -87,16 +96,17 @@ The implementation of TRAM consisted of the following steps:
 
 ## Kinetic Analysis
 
-**Pathway clustering:** Latent-Space Path Clustering (LPC) identifies metastable folding pathways:
+**Pathway clustering:** Leveraged Latent-Space Path Clustering (LPC) identifies metastable folding pathways:
 
 1. **Pathway identification:** TPT generates ~10,000 pathways (unfolded: Q ≤ 0.1; folded: Q ≥ 0.8)
 2. **Pathway embedding:** Project each pathway onto three 2D tIC subspaces, discretize into 50×50 bins, concatenate into 7500-dimensional vectors
 3. **VAE training:** Train variational autoencoder to map pathways to 2D latent space (100 epochs)
 4. **Pathway clustering:** K-means clustering in latent space to identify metastable path channels, optimized by silhouette analysis
 
+**Sample Code:** [`entropy_cost.py`]()
 
-## Results & Discussion
-[Lasso Poster](./Figures/SongYin_AICHE_2025_Lasso.pdf)
+## Engineering
+
 
 ## License
 

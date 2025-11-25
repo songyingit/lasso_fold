@@ -42,7 +42,7 @@ Unbiased MD simulations were performed starting from the pre-folded structure an
 
 Biased MD simulations, Umbrella Sampling, were performed using the Fraction of Native Contacts (Q) as the reaction coordinate. All frames from the unbiased simulations were discretized into 50 evenly distributed bins where Q ranged from 0 (completely unfolded) to 1 (pre-folded), and each bin was an independent umbrella sampling window. For each umbrella sampling window, we applied a harmonic potential based on the root-mean-square deviation (RMSD) of heavy atoms relative to their reference structure.
 
-**Sample Code:** [`umbrella_sampling.py`](https://github.com/songyingit/lasso_fold/tree/main/MD_data/umbrella_sampling.py)
+  - **Sample Code:** [`umbrella_sampling.py`](https://github.com/songyingit/lasso_fold/tree/main/MD_data/umbrella_sampling.py)
 
 ## Markov State Model (MSM)
 

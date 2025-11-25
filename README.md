@@ -1,12 +1,83 @@
-# How Lasso Peptide Fold
+# How Lasso Peptides Fold
 
-![TRAM](./Figures/TRAM.png)
+<p align="center">
+  <img src="./Figures/TRAM.png" alt="Graphical Abstract"/>
+</p>
+
+<p align="center">
+  <a href="">Paper</a> | <a href="">Data Repository</a> | <a href="">Code Repository</a>
+</p>
 
 ## Table of Contents
 - [Abstract](#abstract)
+- [MD Simulations](#md-simulations)
+  - [Systems](#systems)
+  - [Unbiased Simulations](#unbiased-simulations)
+  - [Biased Simulations](#biased-simulations)
+- [Markov State Model (MSM)](#markov-state-model-msm)
+- [Transition-based Reweighting Analysis Method (TRAM)](#transition-based-reweighting-analysis-method-tram)
+- [Thermodynamic Analysis](#thermodynamic-analysis)
+- [Kinetic Analysis](#kinetic-analysis)
+- [License](#license)
 
 ## Abstract
-Lasso peptides are ribosomally synthesized and post-translationally modified peptide (RiPP) natural products that adopt a unique [1]rotaxane conformation. However, the universal folding principles underlying this conformation remain poorly understood, limiting mechanistic insight and rational design. In this study, we integrate extensive molecular dynamics (MD) simulations with advanced deep learning approaches to elucidate de novo folding across 20 structurally characterized lasso peptides in solution. The kinetic asymmetry between lasso peptide folding and unfolding, which hinders sampling of pre-folded states in unbiased simulations, presents fundamental challenges for constructing Markov State Model (MSM) under detailed balance. To overcome this, we employed Transition-based reweighting analysis (TRAM), a statistically optimal framework that incorporates biased simulations to enhance sampling of rarely visited states and reweights them to estimates a robust mutiensemble Markov State Model (MEMM). For each lasso peptide, we resolved folding free energy landscape, the most representative folding pathway and kinetics, and distinct pathway channels clustered by a deep learning-based variational autoencoder (VAE). Our results reveal a universal uphill folding free energy profile, with folding probabilities generally below 1%. Loop stability and entropy cost emerged as the principal determinants of folding efficiency. Microcin J25 exhibited a distinguished higher folding probability due to enhanced loop stability and reduced entropic penalties. Cell-free biosynthesis (CFB) experiments confirmed a strong correlation between β-sheet propensity in the loop re- gion and lasso production. Together, these findings provide a comprehensive model of lasso peptide folding, highlight determinants of stability and kinetics, and establish guiding principles for the rational engineering of synthetic lasso peptides with enhanced formation efficiency.
+
+This study combined extensive unbiased and biased MD simulations with advanced statistical model (TRAM) and deep learning framework (LPC-VAE) to systematically investigate the ability to form native pre-folded conformation in solution and the universal folding mechanisms of 20 structurally characterized lasso peptides.
+
+## MD Simulations
+
+### Systems
+
+We studied 20 structurally characterized lasso peptides.
+
+<p align="center">
+  <img src="./Figures/Lassos.png" alt="Lasso Structures"/>
+</p>
+
+### Unbiased Simulations
+
+Unbiased MD simulations were performed starting from the pre-folded structure and fully extended structure of all 20 lasso peptides. For each lasso peptide, we conducted ~200 µs unbiased MD simulations (200 trajectories from pre-folded and 200 trajectories from extended structures, each trajectory extending ~500 ns).
+
+### Biased Simulations
+
+Biased MD simulations (Umbrella Sampling) were performed using the Fraction of Native Contacts (Q) as the reaction coordinate. All frames from the unbiased simulations were discretized into 50 evenly distributed bins where Q ranged from 0 (completely unfolded) to 1 (pre-folded), and each bin was an independent umbrella sampling window. For each umbrella sampling window, we applied a harmonic potential based on the root-mean-square deviation (RMSD) of heavy atoms relative to their reference structure.
+
+**Sample Code:** [`umbrella_sampling.py`]()
+
+## Markov State Model (MSM)
+
+Markov State Model (MSM) was first employed to connect multiple short MD simulation trajectories to capture the global information of conformational dynamics:
+
+1. **Featurization:** Pairwise residue-residue distances
+2. **Dimensionality reduction:** Time-lagged independent component analysis (tICA) to identify slow timescale components
+3. **Clustering:** K-means clustering to discretize into microstates
+4. **Hyperparameter optimization:** tIC dimensions (2-10) and microstate numbers (100-700) optimized by maximizing VAMP-2 score via 10-fold cross-validation
+
+## Transition-based Reweighting Analysis Method (TRAM)
+
+Integrates biased and unbiased simulations for enhanced sampling:
+
+1. **Bias energy calculation:** Compute bias potential for all frames relative to all umbrella windows
+2. **Thermodynamic state assignment:** Map frames to umbrella windows or unbiased ensemble
+3. **Conformational state discretization:** Apply tICA separately to biased/unbiased data, combine features, and cluster with k-means
+4. **TRAM implementation:** Construct multi-ensemble Markov model (MEMM) using pyEMMA
+
+## Thermodynamic Analysis
+
+**Folding free energy:** Calculated from TRAM stationary distributions. Pre-folded state: Q ≥ 0.8 and ring closure ≤ 7 Å; Unfolded state: Q ≤ 0.1 and ring closure ≥ 7 Å. Uncertainty estimated via bootstrap resampling (200 iterations).
+
+**Loop Q relaxation time:** Quantifies folding stability by monitoring loop native contacts evolution from MEMM dynamics.
+
+**Entropy cost:** Calculated using PARENT program with maximum information spanning tree (MIST) algorithm on 10,000 random frames per state.
+
+## Kinetic Analysis
+
+**Pathway clustering:** Latent-Space Path Clustering (LPC) identifies metastable folding pathways:
+
+1. **Pathway identification:** TPT generates ~10,000 pathways (unfolded: Q ≤ 0.1; folded: Q ≥ 0.8)
+2. **Pathway embedding:** Project each pathway onto three 2D tIC subspaces, discretize into 50×50 bins, concatenate into 7500-dimensional vectors
+3. **VAE training:** Train variational autoencoder to map pathways to 2D latent space (100 epochs)
+4. **Pathway clustering:** K-means clustering in latent space to identify metastable path channels, optimized by silhouette analysis
 
 ## License
 

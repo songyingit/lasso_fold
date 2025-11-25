@@ -1,3 +1,8 @@
+"""
+Write the parameter files to calculate entropy cost using PARENT program for different lasso peptides
+
+"""
+
 lasso_name = ['acinetodin','astexin-1','benenodin-1','brevunsin', 'capistruin','caulonodin-V','caulosegnin-I','caulosegnin-II', 'chaxapeptin', 'citrocin', 
                   'klebsidin', 'microcinJ25','rubrivinodin', 'sphaericin','sphingopyxin-I','streptomonomicin','subterisin','ubonodin','xanthomonin-I', 'xanthomonin-II'] 
 

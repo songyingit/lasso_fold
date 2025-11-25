@@ -1,3 +1,8 @@
+"""
+K-means clustering and Silhouette analysis in the latent space to identify metastable pathway channels
+
+"""
+
 import glob
 import os
 import numpy as np

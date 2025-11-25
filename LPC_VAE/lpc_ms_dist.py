@@ -1,5 +1,5 @@
 """
-Train Variational AutoEncoder (VAE) to map pathways to 2D latent space.
+Project each pathway onto three 2D tIC subspaces, discretize and then concatenate into 7500-dimensional 1-D vectors
 
 """
 

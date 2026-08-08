@@ -1,8 +1,7 @@
 """
-Calculate the folding free energy for each lasso peptide system.
+TRAM-weighted probability of the pre-folded conformation for each lasso peptide.
 
 Pre-folded state: Q >= 0.8 and ring-closure distance <= 6 A.
-Unfolded state:   Q <= 0.1 and ring-closure distance >= 6 A.
 """
 
 import numpy as np
@@ -17,15 +16,10 @@ lasso_name = ['acinetodin','astexin-1','benenodin-1','brevunsin', 'capistruin','
 cluster_number = [400, 100, 100, 100, 100, 200, 500, 100, 300, 200,
                   400, 400, 300, 200, 500, 200, 100, 200, 300, 400]
 tram_lag = [150, 150, 150, 150, 100, 150, 150, 150, 150, 150,
-                  150, 150, 150, 100, 150, 150, 150, 150, 150, 100]
-
-# Thermodynamic constants
-R = 0.001987  # kcal/mol.K
-T = 300       # Kelvin
+            150, 150, 150, 100, 150, 150, 150, 150, 150, 100]
 
 # State definition
 Q_FOLDED = 0.8
-Q_UNFOLDED = 0.1
 RC_CUTOFF = 0.6   # nm (6 A)
 
 # Bootstrap settings
@@ -59,20 +53,18 @@ for i, lasso in enumerate(lasso_name):
         unbiased_ring_close = pickle.load(f)
     ring_close_connected = np.concatenate(biased_ring_close + unbiased_ring_close, axis=0)
 
-    # Bootstrap dG calculation
-    n_frames = len(q_connected)
+    # Bootstrap the TRAM-weighted pre-folded percentage
+    n_frames = q_connected.shape[0]
     sample_size = int(bootstrap_frac * n_frames)
-    delta_g_vals = []
+    bootstrap_perc = []
     for _ in range(n_bootstrap):
-        idx = np.random.choice(n_frames, size=sample_size, replace=True)
-        w_sample = tram_weights[idx]
-        q_sample = q_connected[idx]
-        rc_sample = ring_close_connected[idx]
-        p_f = w_sample[(q_sample >= Q_FOLDED) & (rc_sample <= RC_CUTOFF)].sum()
-        p_u = w_sample[(q_sample <= Q_UNFOLDED) & (rc_sample >= RC_CUTOFF)].sum()
-        delta_g_vals.append(-R * T * np.log(p_f / p_u))
+        idx = np.random.choice(n_frames, size=sample_size, replace=False)
+        q_bs = q_connected[idx]
+        rc_bs = ring_close_connected[idx]
+        w_bs = tram_weights[idx]
+        pct = np.sum(w_bs[(q_bs >= Q_FOLDED) & (rc_bs <= RC_CUTOFF)]) / np.sum(w_bs) * 100
+        bootstrap_perc.append(pct)
+    bootstrap_perc = np.array(bootstrap_perc)
 
-    mean_dg = np.mean(delta_g_vals)
-    stderr_dg = np.std(delta_g_vals)
-    results.append((lasso, mean_dg, stderr_dg))
-    print(f"[{lasso}] dG_fold = {mean_dg:.3f} +/- {stderr_dg:.3f} kcal/mol")
+    results.append((lasso, bootstrap_perc.mean(), bootstrap_perc.std()))
+    print(f"[{lasso}] pre-folded population = {bootstrap_perc.mean():.4f} +/- {bootstrap_perc.std():.4f} %")

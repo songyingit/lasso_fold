@@ -1,11 +1,11 @@
-# How Lasso Peptides Fold
+# De novo Folding Mechanisms of Lasso Peptides
 
 <p align="center">
   <img src="./Figures/TRAM.png" alt="Graphical Abstract"/>
 </p>
 
 <p align="center">
-  <a href="./Figures/SongYin_AICHE_2025_Lasso.pdf">Poster</a> | <a href="">Paper</a> | <a href="">Data Repository</a> | <a href="">Code Repository</a>
+  <a href="https://www.biorxiv.org/content/10.64898/2026.03.30.715466v1">Paper</a> | <a href="">Data Repository</a> | <a href="https://github.com/songyingit/lasso_fold/">Code Repository</a>
 </p>
 
 ## Table of Contents
@@ -18,17 +18,21 @@
 - [Transition-based Reweighting Analysis Method (TRAM)](#transition-based-reweighting-analysis-method-tram)
 - [Thermodynamic Analysis](#thermodynamic-analysis)
 - [Kinetic Analysis](#kinetic-analysis)
+- [Threading and Ring-Closure Validation](#threading-and-ring-closure-validation)
+- [Confinement Free Energy](#confinement-free-energy)
+- [Peptide Engineering](#peptide-engineering)
+- [Dependencies](#dependencies)
 - [License](#license)
 
 ## Abstract
 
-This study combined extensive unbiased and biased MD simulations with advanced statistical model (TRAM) and deep learning framework (LPC-VAE) to systematically investigate the ability to form native pre-folded conformation in solution and the universal folding mechanisms of 20 structurally characterized lasso peptides.
+This study combined extensive unbiased and biased MD simulations with advanced statistical model (TRAM) and deep learning framework (LPC-VAE) to systematically investigate the ability to form native pre-folded conformation in solution and the folding mechanisms of 20 structurally characterized lasso peptides.
 
 ## MD Simulations
 
 ### Systems
 
-We studied 20 structurally characterized lasso peptides.
+We studied 20 structurally characterized lasso peptides lacking secondary post-translational modifications.
 
 <p align="center">
   <img src="./Figures/Lassos.png" alt="Lasso Structures" width="600"/>
@@ -64,7 +68,7 @@ The kinetic asymmetry of folding for most of lasso peptides (unfolding proceeds 
 
 The implementation of TRAM consisted of the following steps:
 
-1. **Featurization:** Pairwise residue-residue distances.
+1. **Featurization:** Three quantities are computed for every frame of the biased and unbiased trajectories: pairwise Cα-Cα residue distances (the tICA input), the fraction of native contacts (Q), and the ring-closure distance, i.e. the distance between the N-terminus (backbone N of residue 1) and the side chain carboxylate carbon of the acceptor residue (Cδ of Glu or Cγ of Asp).
 
   - **Sample Code:** [`tram_feature.py`](https://github.com/songyingit/lasso_fold/tree/main/TRAM/tram_feature.py)
 
@@ -81,7 +85,13 @@ The implementation of TRAM consisted of the following steps:
 
 ## Thermodynamic Analysis
 
-**Folding free energy:** Calculated from TRAM stationary distributions. Pre-folded state: Q ≥ 0.8 and ring closure ≤ 7 Å; Unfolded state: Q ≤ 0.1 and ring closure ≥ 7 Å. Uncertainty estimated via bootstrap resampling (200 iterations).
+The pre-folded and unfolded states are defined jointly by Q and the ring-closure distance, because Q alone cannot separate an unthreaded proto-folded structure from a genuinely unfolded one. **Pre-folded state: Q ≥ 0.8 and ring-closure distance ≤ 6 Å; Unfolded state: Q ≤ 0.1 and ring-closure distance ≥ 6 Å.**
+
+**Pre-folded population:** Sum of the TRAM stationary weights of all pre-folded frames. Uncertainty estimated via bootstrap resampling (100 iterations, 80% of frames per iteration).
+
+  - **Sample Code:** [`prefolded_population.py`](https://github.com/songyingit/lasso_fold/tree/main/Analysis/prefolded_population.py)
+
+**Folding free energy:** Calculated from TRAM stationary distributions as ∆G<sub>f</sub> = −RT ln(P<sub>pre-folded</sub> / P<sub>unfolded</sub>). Uncertainty estimated via bootstrap resampling (100 iterations, 80% of frames per iteration).
 
   - **Sample Code:** [`folding_free_energy.py`](https://github.com/songyingit/lasso_fold/tree/main/Analysis/folding_free_energy.py)
 
@@ -89,15 +99,15 @@ The implementation of TRAM consisted of the following steps:
 
   - **Sample Code:** [`loop_q_relax_time.py`](https://github.com/songyingit/lasso_fold/tree/main/Analysis/loop_q_relax_time.py)
 
-**Entropy cost:** Calculated using [PARENT program](https://github.com/markusfleck/PARENT) with maximum information spanning tree (MIST) algorithm on 10,000 random frames from both Pre-folded state and Unfolded state.
+**Entropy cost:** Calculated using [PARENT program](https://github.com/markusfleck/PARENT) with maximum information spanning tree (MIST) algorithm on 10,000 random frames drawn from the pre-folded and unfolded states as defined above.
 
-  - **Sample Code:** [`entropy_cost.py`](https://github.com/songyingit/lasso_fold/tree/main/Analysis/entropy_cost.py)
+  - **Sample Code:** [`entropy_frame_selection.py`](https://github.com/songyingit/lasso_fold/tree/main/Analysis/entropy_frame_selection.py), [`entropy_cost.py`](https://github.com/songyingit/lasso_fold/tree/main/Analysis/entropy_cost.py)
 
 ## Kinetic Analysis
 
 **Pathway clustering:** Leveraged Variational AutoEncoder based Latent-space Path Clustering algorithm ([LPC-VAE](https://pubs.acs.org/doi/full/10.1021/acs.jctc.3c00318)) identifing folding pathway channels and find the most representative pathway with maximum flux for each lasso peptide:
 
-1. **Pathway identification and flux calculation:** Apply Transition path theory (TPT) to obtain folding pathways (unfolded: Q ≤ 0.1; pre-folded: Q ≥ 0.8) and calculate the corresponding flux. 
+1. **Pathway identification and flux calculation:** Apply Transition path theory (TPT) to obtain folding pathways and calculate the corresponding flux. The source and sink sets are the microstates whose mean Q is below 0.1 (unfolded) and above 0.8 (pre-folded); if no microstate reaches a mean Q of 0.8, the single highest-Q microstate is used as the sink.
   - **Sample Code:** [`lpc_TPT_pathway_flux.py`](https://github.com/songyingit/lasso_fold/tree/main/LPC_VAE/lpc_TPT_pathway_flux.py)
 2. **Pathway embedding:** Project each pathway onto three 2D tIC subspaces, discretize and then concatenate into 7500-dimensional 1-D vectors
   - **Sample Code:** [`lpc_ms_dist.py`](https://github.com/songyingit/lasso_fold/tree/main/LPC_VAE/lpc_ms_dist.py)
@@ -106,9 +116,49 @@ The implementation of TRAM consisted of the following steps:
 4. **Pathway clustering:** K-means clustering and Silhouette analysis in the latent space to identify metastable pathway channels, and plot the flux-weighted pathways in the latent space for visualizations.
   - **Sample Code:** [`lpc_kmeans_cluster.py`](https://github.com/songyingit/lasso_fold/tree/main/LPC_VAE/lpc_kmeans_cluster.py)
 
+## Threading and Ring-Closure Validation
+
+The joint Q and ring-closure criterion is validated geometrically with [LATCHED](https://github.com/gabedahora/LATCHED), the threading detection algorithm of da Hora et al., which tests whether the tail penetrates the macrolactam ring and therefore separates pre-lasso conformations from unthreaded pre-tadpole ones.
+
+1. **Pre-lasso vs pre-tadpole classification:** For each lasso peptide, all frames with a ring-closure distance ≤ 6 Å are passed to LATCHED and split into pre-lasso and pre-tadpole trajectories, with raw and TRAM-weighted fractions reported.
+  - **Sample Code:** [`latched_split.py`](https://github.com/songyingit/lasso_fold/tree/main/Threading/latched_split.py)
+2. **Pre-folded state purity:** Restricting the same classification to frames satisfying the full pre-folded definition (Q ≥ 0.8 and ring-closure ≤ 6 Å) quantifies how many of those conformations are pre-folded.
+  - **Sample Code:** [`latched_q_rc_stats.py`](https://github.com/songyingit/lasso_fold/tree/main/Threading/latched_q_rc_stats.py)
+3. **Other collective variable:** The harmonic linear discriminant analysis ([HLDA](https://pubs.acs.org/jpcbfk/article/128/17/4063/890133/One-Descriptor-to-Fold-Them-All-Harnessing)) collective variable of da Hora et al. is recomputed for microcin J25, together with the ring-closure distance, used as an alternative pair of coordinates; the basins of that landscape are then classified with LATCHED.
+  - **Sample Code:** [`hlda_cv.py`](https://github.com/songyingit/lasso_fold/tree/main/Threading/hlda_cv.py), [`latched_basin_analysis.py`](https://github.com/songyingit/lasso_fold/tree/main/Threading/latched_basin_analysis.py)
+
+## Confinement Free Energy
+
+To quantify how the confinement provided by the cyclase pocket changes the folding thermodynamics, the TRAM ensemble of capistruin is reweighted with the same spherical flat-bottom wall used in the confinement MD simulations, U(R) = k Σ<sub>atoms</sub> max(0, |r − COM| − R)², k = 5 kcal·mol⁻¹·Å⁻². Because the wall only adds a position-dependent energy on top of the same force field, the confined ensemble is the unconfined ensemble reweighted by e<sup>−U/k<sub>B</sub>T</sup> (Zwanzig identity).
+
+The wall free energy of a basin is G<sub>wall</sub>(B, R) = −k<sub>B</sub>T ln ⟨e<sup>−U(R)/k<sub>B</sub>T</sup>⟩<sub>B</sub>, and the relative stabilization of folding is ∆∆G<sub>f</sub>(R) = G<sub>wall</sub>(pre-folded, R) − G<sub>wall</sub>(unfolded, R). Reliability is judged by the reweighting effective sample size of both basins.
+
+  - **Sample Code:** [`softwall_fep_perframe.py`](https://github.com/songyingit/lasso_fold/tree/main/Confinement/softwall_fep_perframe.py), [`softwall_fep.py`](https://github.com/songyingit/lasso_fold/tree/main/Confinement/softwall_fep.py)
+
+## Peptide Engineering
+
+A ring × loop factorial design tests whether the loop governs pre-folded stability for microcin J25 and klebsidin.They share the same ring size and ring-closure residues but differ sharply in loop β-hairpin content, so their loops were swapped reciprocally to give two chimeras, and all four systems were simulated with unbiased MD.
+
+|  | klebsidin loop | microcin J25 loop |
+|---|---|---|
+| **klebsidin ring** | klebsidin (WT) | chimera1 |
+| **microcin J25 ring** | chimera2 | microcin J25 (WT) |
+
+1. **Chimera construction:** The loop is grafted between the two scaffolds in PyMOL by Cα-only superposition on the conserved ring and tail. Both chimeras are then solvated and minimized with the same protocol as the wild-type systems (ff14SB, TIP3P, no isopeptide bond, hydrogen mass repartitioning).
+  - **Sample Code:** [`graft_chimera.py`](https://github.com/songyingit/lasso_fold/tree/main/Engineering/graft_chimera.py)
+2. **Folded-state stability:** Loop β-hairpin content (fraction of loop-window residues assigned strict DSSP `E`) and the fraction of native contacts are compared across the four systems.
+  - **Sample Code:** [`compare_ring_loop_factorial.py`](https://github.com/songyingit/lasso_fold/tree/main/Engineering/compare_ring_loop_factorial.py), [`loop_beta_hairpin.py`](https://github.com/songyingit/lasso_fold/tree/main/Engineering/loop_beta_hairpin.py)
+
+## Dependencies
+
+Analysis: Python 3, `pyemma`, `mdtraj`, `numpy`, `scipy`, `pandas`, `scikit-learn`, `torch`, `natsort`, `tol_colors`, `matplotlib`.
+
+External tools: [OpenMM](https://openmm.org/) with ParmEd/AmberTools for the simulations, [PyMOL](https://pymol.org/) for the chimera grafts, [VMD](https://www.ks.uiuc.edu/Research/vmd/) for LATCHED, and [PARENT](https://github.com/markusfleck/PARENT) for the conformational entropy.
+
+Each script carries a `pwd` placeholder at the top; set it to the root of the simulation data tree before running.
 
 ## License
 
-**© 2025 Song Yin. All Rights Reserved.**
+**© 2026 Song Yin. All Rights Reserved.**
 
 This code is made available for viewing purposes only. No permission is granted to use, copy, modify, or distribute this code for any purpose.

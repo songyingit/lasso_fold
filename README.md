@@ -144,7 +144,7 @@ A ring × loop factorial design tests whether the loop governs pre-folded stabil
 | **klebsidin ring** | klebsidin (WT) | chimera1 |
 | **microcin J25 ring** | chimera2 | microcin J25 (WT) |
 
-1. **Chimera construction:** The loop is grafted between the two scaffolds in PyMOL by Cα-only superposition on the conserved ring and tail. Both chimeras are then solvated and minimized with the same protocol as the wild-type systems (ff14SB, TIP3P, no isopeptide bond, hydrogen mass repartitioning).
+1. **Chimera construction:** The loop is grafted between the two scaffolds in PyMOL by Cα-only superposition on the conserved ring and tail. Both chimeras are then solvated and minimized with the same protocol as the wild-type systems.
   - **Sample Code:** [`graft_chimera.py`](https://github.com/songyingit/lasso_fold/tree/main/Engineering/graft_chimera.py)
 2. **Folded-state stability:** Loop β-hairpin content (fraction of loop-window residues assigned strict DSSP `E`) and the fraction of native contacts are compared across the four systems.
   - **Sample Code:** [`compare_ring_loop_factorial.py`](https://github.com/songyingit/lasso_fold/tree/main/Engineering/compare_ring_loop_factorial.py), [`loop_beta_hairpin.py`](https://github.com/songyingit/lasso_fold/tree/main/Engineering/loop_beta_hairpin.py)

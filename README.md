@@ -129,9 +129,9 @@ The joint Q and ring-closure criterion is validated geometrically with [LATCHED]
 
 ## Confinement Free Energy
 
-To quantify how the confinement provided by the cyclase pocket changes the folding thermodynamics, the TRAM ensemble of capistruin is reweighted with the same spherical flat-bottom wall used in the confinement MD simulations, U(R) = k Σ<sub>atoms</sub> max(0, |r − COM| − R)², k = 5 kcal·mol⁻¹·Å⁻². Because the wall only adds a position-dependent energy on top of the same force field, the confined ensemble is the unconfined ensemble reweighted by e<sup>−U/k<sub>B</sub>T</sup> (Zwanzig identity).
+To quantify how the confinement provided by the cyclase pocket changes the folding thermodynamics, the TRAM ensemble of capistruin is reweighted with the same spherical potential used in the confinement MD simulations, U(R) = k Σ<sub>atoms</sub> max(0, |r − COM| − R)², k = 5 kcal·mol⁻¹·Å⁻². Because the potential only adds a position-dependent energy on top of the same force field, the confined ensemble is the unconfined ensemble reweighted by e<sup>−U/k<sub>B</sub>T</sup> (Zwanzig identity).
 
-The wall free energy of a basin is G<sub>wall</sub>(B, R) = −k<sub>B</sub>T ln ⟨e<sup>−U(R)/k<sub>B</sub>T</sup>⟩<sub>B</sub>, and the relative stabilization of folding is ∆∆G<sub>f</sub>(R) = G<sub>wall</sub>(pre-folded, R) − G<sub>wall</sub>(unfolded, R). Reliability is judged by the reweighting effective sample size of both basins.
+The free energy of a basin is G(B, R) = −k<sub>B</sub>T ln ⟨e<sup>−U(R)/k<sub>B</sub>T</sup>⟩<sub>B</sub>, and the relative stabilization of folding is ∆∆G<sub>f</sub>(R) = G(pre-folded, R) − G(unfolded, R). Reliability is judged by the reweighting effective sample size of both basins.
 
   - **Sample Code:** [`softwall_fep_perframe.py`](https://github.com/songyingit/lasso_fold/tree/main/Confinement/softwall_fep_perframe.py), [`softwall_fep.py`](https://github.com/songyingit/lasso_fold/tree/main/Confinement/softwall_fep.py)
 
